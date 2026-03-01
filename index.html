@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Night Route Lighting</title>
+  <link rel="preconnect" href="https://api.mapbox.com">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.13.0/mapbox-gl.css" rel="stylesheet">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="side-rail">
+      <div class="brand-lockup" aria-label="Mission for Inner City Cape Town">
+        <span class="brand-line brand-mission">Mission</span>
+        <span class="brand-line brand-for">for</span>
+        <span class="brand-line brand-inner">Inner City</span>
+        <span class="brand-line brand-cape">Cape Town</span>
+      </div>
+    </aside>
+
+    <main class="dashboard">
+      <section class="hero-card glass">
+        <div class="hero-copy">
+          <p class="eyebrow">Night Collection</p>
+          <h1>Night Route Lighting</h1>
+          <p class="hero-subtitle">A custom Mapbox dashboard tuned for route visibility. Brightness is a relative image score from the video frame, not lux.</p>
+          <div class="hero-track">
+            <div class="hero-gradient-bar"></div>
+            <div class="hero-track-labels">
+              <span>Very low</span>
+              <span>Low</span>
+              <span>Moderate</span>
+              <span>Good</span>
+              <span>Bright</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-score">
+          <div class="score-pill">
+            <span class="score-label">Current Relative Brightness</span>
+            <span class="score-value" id="currentScore">--</span>
+            <span class="score-unit">/ 255</span>
+          </div>
+          <div class="hero-metrics">
+            <div class="metric-block">
+              <span class="metric-label">Median</span>
+              <span class="metric-value" id="medianScore">--</span>
+            </div>
+            <div class="metric-block">
+              <span class="metric-label">80th percentile</span>
+              <span class="metric-value" id="highScore">--</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="controls-card glass">
+        <div class="controls-header">
+          <div>
+            <p class="panel-label">Route position</p>
+            <p class="panel-subtle" id="timeLabel">0s of 0s</p>
+          </div>
+          <div class="toggle-group" id="viewModeGroup">
+            <button class="toggle-button active" type="button" data-mode="follow">Follow current point</button>
+            <button class="toggle-button" type="button" data-mode="overview">Route overview</button>
+          </div>
+        </div>
+        <input id="timeScrubber" class="scrubber" type="range" min="0" max="0" value="0" step="1">
+        <div class="progress-rail">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </section>
+
+      <section class="top-grid">
+        <section class="highlights-card glass">
+          <div class="section-topline">
+            <div>
+              <p class="panel-label">Today&apos;s Highlight</p>
+              <h2>Lighting State</h2>
+            </div>
+            <div class="theme-switch" id="themeSwitch">
+              <button class="theme-chip active" type="button" data-style="dark">Dark</button>
+              <button class="theme-chip" type="button" data-style="satellite">Satellite</button>
+            </div>
+          </div>
+          <div class="highlight-grid">
+            <article class="mini-card">
+              <p class="mini-title">Visibility class</p>
+              <div class="mini-hero" id="statusLabel">--</div>
+              <p class="mini-note" id="statusNote">Waiting for data</p>
+            </article>
+            <article class="mini-card">
+              <p class="mini-title">Percentile rank</p>
+              <div class="mini-hero" id="percentileRank">--</div>
+              <p class="mini-note">Within this route</p>
+            </article>
+            <article class="mini-card">
+              <p class="mini-title">Route span</p>
+              <div class="mini-hero" id="routeLengthValue">--</div>
+              <p class="mini-note">Seconds sampled</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="map-card glass">
+          <div class="section-topline">
+            <div>
+              <p class="panel-label">Route map</p>
+              <h2>Light output trail</h2>
+            </div>
+            <label class="inline-toggle">
+              <input id="pointsToggle" type="checkbox" checked>
+              <span>Show sample points</span>
+            </label>
+          </div>
+          <div id="map"></div>
+          <div class="legend-row" id="bandLegend"></div>
+        </section>
+      </section>
+
+      <section class="bottom-grid">
+        <section class="distribution-card glass">
+          <div class="section-topline">
+            <div>
+              <p class="panel-label">Light intensity distribution</p>
+              <h2>Interactive ribbon</h2>
+            </div>
+            <div class="section-meta" id="distributionMeta">Hover to inspect bins</div>
+          </div>
+          <div class="chart-wrap">
+            <svg id="distributionChart" viewBox="0 0 620 280" preserveAspectRatio="none"></svg>
+            <div id="chartTooltip" class="chart-tooltip hidden"></div>
+          </div>
+          <p class="panel-subtle">Foreground shows the route up to the scrub point. Background shows the whole route.</p>
+        </section>
+
+        <section class="trend-card glass">
+          <div class="section-topline">
+            <div>
+              <p class="panel-label">Route signal</p>
+              <h2>Brightness over time</h2>
+            </div>
+          </div>
+          <div class="chart-wrap compact">
+            <svg id="trendChart" viewBox="0 0 420 210" preserveAspectRatio="none"></svg>
+          </div>
+          <div class="footnote">This score is a camera-derived brightness proxy, not a measured lux value.</div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.13.0/mapbox-gl.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
